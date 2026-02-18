@@ -97,10 +97,13 @@ def create_products():
 ######################################################################
 # L I S T   A L L   P R O D U C T S
 ######################################################################
+@app.route("/products", methods=["GET"])
+def list_products():
+    """Returns all the products in the database"""
+    products = Product.all()
+    results = [p.serialize() for p in products]
+    return results, status.HTTP_200_OK
 
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
 
 ######################################################################
 # R E A D   A   P R O D U C T
@@ -112,11 +115,12 @@ def get_product(product_id):
 
     product = Product.find(product_id)
     app.logger.info("Returning product: %s", product)
-    
+
     if not product:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    
+
     return product.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 # U P D A T E   A   P R O D U C T
@@ -128,20 +132,28 @@ def update_product(product_id):
 
     product = Product.find(product_id)
     app.logger.info("Finding product: %s", product)
-    
+
     if not product:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    
+
     product.deserialize(request.get_json())
     product.id = product_id
     product.update()
     return product.serialize(), status.HTTP_200_OK
 
+
 ######################################################################
 # D E L E T E   A   P R O D U C T
 ######################################################################
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_product(product_id):
+    """Delete a single product"""
+    app.logger.info("Request to delete a product with id [%s]", product_id)
 
+    product = Product.find(product_id)
+    app.logger.info("Finding product: %s", product)
 
-#
-# PLACE YOUR CODE TO DELETE A PRODUCT HERE
-#
+    if product:
+        product.delete()
+
+    return "", status.HTTP_204_NO_CONTENT

@@ -32,6 +32,8 @@ from service import app
 from service.common import status
 from service.models import db, init_db, Product
 from tests.factories import ProductFactory
+from urllib.parse import quote_plus
+
 
 # Disable all but critical errors during normal test run
 # uncomment for debugging failing tests
@@ -163,6 +165,10 @@ class TestProductRoutes(TestCase):
         response = self.client.post(BASE_URL, data={}, content_type="plain/text")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+# ----------------------------------------------------------
+# TEST GET PRODUCT
+# ----------------------------------------------------------
+
     def test_get_product(self):
         """It should return a product"""
         test_products = self._create_products(1)
@@ -171,9 +177,13 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_product.name)
-        #Test non existing id
+        # Test non existing id
         response = self.client.get(f'{BASE_URL}/{test_product.id}123')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+# ----------------------------------------------------------
+# TEST UPDATE
+# ----------------------------------------------------------
 
     def test_update_product(self):
         """It should update a product"""
@@ -181,7 +191,6 @@ class TestProductRoutes(TestCase):
         test_product = ProductFactory()
         response = self.client.post(BASE_URL, json=test_product.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         # Check original category
         data = response.get_json()
         # Update category
@@ -193,22 +202,42 @@ class TestProductRoutes(TestCase):
         data = response.get_json()
         self.assertEqual(data["description"], new_description)
 
+# ----------------------------------------------------------
+# TEST DELETE
+# ----------------------------------------------------------
+    
     def test_delete_a_product(self):
         """It should delete a product"""
         # Create a number of products
         products = self._create_products(5)
         # Store the first products id
         test_product = products[0]
-        # Requeste to delete via self.client.delete
+
         response = self.client.delete(f'{BASE_URL}/{test_product.id}')
         # Check if empty response with code 204
-        self.assertEqual(response.status_code, status.HTTP_204_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # Request to read the deleted item and receieve code 404
         response = self.client.get(f'{BASE_URL}/{test_product.id}')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # See if count of products have been reduced by 1
-        self.assertEqual(self.get_product_count(), 4)
+        new_count = self.get_product_count()
+        self.assertEqual(new_count, 4)
+    
+# ----------------------------------------------------------
+# TEST LIST PRODUCTS
+# ----------------------------------------------------------
+
+    def test_list_all_products(self):
+        """It should list all products"""
+        self._create_products(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+
+    def test_list_by_name(self):
+
 
     ######################################################################
     # Utility functions
