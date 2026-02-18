@@ -237,7 +237,16 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), 5)
 
     def test_list_by_name(self):
-
+        products = self._create_products(5)
+        test_product = products[0]
+        name_count = len([p for p in products if p.name == test_product.name])
+        
+        response = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_product.name)}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), name_count)
+        for product in data:
+            self.assertEqual(product["name"], test_product.name)
 
     ######################################################################
     # Utility functions
