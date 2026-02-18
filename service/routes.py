@@ -122,7 +122,7 @@ def get_product(product_id):
 # U P D A T E   A   P R O D U C T
 ######################################################################
 @app.route("/products/<int:product_id>", methods=["PUT"])
-def get_product(product_id):
+def update_product(product_id):
     """Retrieve a single product"""
     app.logger.info("Request to Update a product with id [%s]", product_id)
 
@@ -133,7 +133,8 @@ def get_product(product_id):
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
     
     product.deserialize(request.get_json())
-
+    product.id = product_id
+    product.update()
     return product.serialize(), status.HTTP_200_OK
 
 ######################################################################

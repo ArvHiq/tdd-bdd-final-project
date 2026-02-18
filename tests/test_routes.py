@@ -163,11 +163,8 @@ class TestProductRoutes(TestCase):
         response = self.client.post(BASE_URL, data={}, content_type="plain/text")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    #
-    # ADD YOUR TEST CASES HERE
-    #
-
     def test_get_product(self):
+        """It should return a product"""
         test_products = self._create_products(1)
         test_product = test_products[0]
         response = self.client.get(f'{BASE_URL}/{test_product.id}')
@@ -181,28 +178,37 @@ class TestProductRoutes(TestCase):
     def test_update_product(self):
         """It should update a product"""
         # Create prod and read from db
-        test_product = self._create_products(1)[0]
-        response = self.client.get(f'{BASE_URL}/{test_product.id}')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check original category
         data = response.get_json()
-        self.assertEqual(data["category"], test_product.category.name)
-
         # Update category
-        new_category = "This is the new category"
-        test_product.category = new_category
-        response = self.client.put(f'{BASE_URL}/{test_product.id}', json=new_product)
+        new_description = "This is the new description"
+        data["description"] = new_description
+        response = self.client.put(f'{BASE_URL}/{data["id"]}', json=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # !Not implemented! Check if no other prod was created
-        
-        # Check if the original prods category was updated sucessfully
-        response = self.client.get(f'{BASE_URL}/{test_product.id}')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        self.assertEqual(data["category"], new_category)
+        self.assertEqual(data["description"], new_description)
 
+    def test_delete_a_product(self):
+        """It should delete a product"""
+        # Create a number of products
+        products = self._create_products(5)
+        # Store the first products id
+        test_product = products[0]
+        # Requeste to delete via self.client.delete
+        response = self.client.delete(f'{BASE_URL}/{test_product.id}')
+        # Check if empty response with code 204
+        self.assertEqual(response.status_code, status.HTTP_204_OK)
+        self.assertEqual(len(response.data), 0)
+        # Request to read the deleted item and receieve code 404
+        response = self.client.get(f'{BASE_URL}/{test_product.id}')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # See if count of products have been reduced by 1
+        self.assertEqual(self.get_product_count(), 4)
 
     ######################################################################
     # Utility functions
