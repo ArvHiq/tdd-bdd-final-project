@@ -118,10 +118,10 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found_product.name, product.name)
         self.assertEqual(found_product.description, product.description)
         self.assertEqual(found_product.price, product.price)
-        
+
     def test_update_a_product(self):
         """It should update a product"""
-        #Creates a new product
+        # Creates a new product
         product = ProductFactory()
         logging.info(f'{product}')
         product.id = None
@@ -132,26 +132,26 @@ class TestProductModel(unittest.TestCase):
         product.update()
         self.assertEqual(len(Product.all()), 1)
         self.assertEqual(Product.find(product.id).description, new_descr)
-        
+
     def test_delete_a_product(self):
         """It should delete a product"""
-        #Creates a new product
+        # Creates a new product
         product = ProductFactory()
         logging.info(f'{product}')
         product.id = None
         product.create()
         logging.info(f'Product ID is now: {product.id}')
-        #Check if there and not there after deletion
+        # Check if there and not there after deletion
         self.assertEqual(len(Product.all()), 1)
         product.delete()
         self.assertEqual(len(Product.all()), 0)
 
     def test_list_all_products(self):
         """It should retrieve all products in db"""
-        #Check if list of products is empty
+        # Check if list of products is empty
         products = Product.all()
         self.assertEqual(len(products), 0)
-        #Create entries of products
+        # Create entries of products
         for _ in range(5):
             product = ProductFactory()
             logging.info(f'{product}')
@@ -160,10 +160,10 @@ class TestProductModel(unittest.TestCase):
             logging.info(f'Product ID is now: {product.id}')
         products = Product.all()
         self.assertEqual(len(products), 5)
-    
+
     def test_find_product_by_name(self):
         """It should return a product with the correct name"""
-        #Creates five products and adds to db
+        # Creates five products and adds to db
         products = ProductFactory.create_batch(5)
         for p in products:
             logging.info(f'{p}')
@@ -177,5 +177,55 @@ class TestProductModel(unittest.TestCase):
         for p in found_products:
             self.assertEqual(p.name, first_prod_name)
 
-    
-        
+    def test_find_product_by_available(self):
+        """It should return a product with the correct available"""
+        # Creates five products and adds to db
+        products = ProductFactory.create_batch(5)
+        for p in products:
+            logging.info(f'{p}')
+            p.id = None
+            p.create()
+            logging.info(f'Product ID is now: {p.id}')
+        first_prod_available = products[0].available
+        first_available_count = len([p for p in products if p.available == first_prod_available])
+        found_products = Product.find_by_availability(first_prod_available)
+        self.assertEqual(first_available_count, found_products.count())
+        for p in found_products:
+            self.assertEqual(p.available, first_prod_available)
+
+    def test_find_product_by_category(self):
+        """It should return a product with the correct category"""
+        # Creates five products and adds to db
+        products = ProductFactory.create_batch(5)
+        for p in products:
+            logging.info(f'{p}')
+            p.id = None
+            p.create()
+            logging.info(f'Product ID is now: {p.id}')
+        first_prod_category = products[0].category
+        first_category_count = len([p for p in products if p.category == first_prod_category])
+        found_products = Product.find_by_category(first_prod_category)
+        self.assertEqual(first_category_count, found_products.count())
+        for p in found_products:
+            self.assertEqual(p.category, first_prod_category)
+
+    def test_find_product_by_price(self):
+        """It should return a product with the correct price"""
+        # Creates five products and adds to db
+        products = ProductFactory.create_batch(5)
+        for p in products:
+            logging.info(f'{p}')
+            p.id = None
+            p.create()
+            logging.info(f'Product ID is now: {p.id}')
+        first_prod_price = products[0].price
+        first_price_count = len([p for p in products if p.price == first_prod_price])
+        found_products = Product.find_by_price(first_prod_price)
+        self.assertEqual(first_price_count, found_products.count())
+        for p in found_products:
+            self.assertEqual(p.price, first_prod_price)
+        # Test to find with price as string
+        price_str = str(first_prod_price)+" "
+        found_products = Product.find_by_price(price_str)
+        self.assertEqual(first_price_count, found_products.count())
+
