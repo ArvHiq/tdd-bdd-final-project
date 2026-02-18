@@ -167,6 +167,43 @@ class TestProductRoutes(TestCase):
     # ADD YOUR TEST CASES HERE
     #
 
+    def test_get_product(self):
+        test_products = self._create_products(1)
+        test_product = test_products[0]
+        response = self.client.get(f'{BASE_URL}/{test_product.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_product.name)
+        #Test non existing id
+        response = self.client.get(f'{BASE_URL}/{test_product.id}123')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_product(self):
+        """It should update a product"""
+        # Create prod and read from db
+        test_product = self._create_products(1)[0]
+        response = self.client.get(f'{BASE_URL}/{test_product.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check original category
+        data = response.get_json()
+        self.assertEqual(data["category"], test_product.category.name)
+
+        # Update category
+        new_category = "This is the new category"
+        test_product.category = new_category
+        response = self.client.put(f'{BASE_URL}/{test_product.id}', json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # !Not implemented! Check if no other prod was created
+        
+        # Check if the original prods category was updated sucessfully
+        response = self.client.get(f'{BASE_URL}/{test_product.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["category"], new_category)
+
+
     ######################################################################
     # Utility functions
     ######################################################################
