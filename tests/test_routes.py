@@ -209,7 +209,7 @@ class TestProductRoutes(TestCase):
 # ----------------------------------------------------------
 # TEST DELETE
 # ----------------------------------------------------------
-    
+
     def test_delete_a_product(self):
         """It should delete a product"""
         # Create a number of products
@@ -227,7 +227,7 @@ class TestProductRoutes(TestCase):
         # See if count of products have been reduced by 1
         new_count = self.get_product_count()
         self.assertEqual(new_count, 4)
-    
+
 # ----------------------------------------------------------
 # TEST LIST PRODUCTS
 # ----------------------------------------------------------
@@ -241,10 +241,11 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), 5)
 
     def test_list_by_name(self):
+        """It should list all products by same nameame"""
         products = self._create_products(5)
         test_product = products[0]
         name_count = len([p for p in products if p.name == test_product.name])
-        
+
         response = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_product.name)}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
@@ -253,22 +254,24 @@ class TestProductRoutes(TestCase):
             self.assertEqual(product["name"], test_product.name)
 
     def test_list_by_category(self):
+        """It should list all products by same category"""
         products = self._create_products(5)
         test_product = products[0]
         category_count = len([p for p in products if p.category == test_product.category])
-        
+
         response = self.client.get(BASE_URL, query_string=f"category={quote_plus(test_product.category.name)}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        self.assertEqual(len(data),category_count)
+        self.assertEqual(len(data), category_count)
         for product in data:
             self.assertEqual(product["category"], test_product.category.name)
 
     def test_list_by_availability(self):
+        """It should list all products by same availability"""
         products = self._create_products(5)
         test_product = products[0]
         available_count = len([p for p in products if p.available == test_product.available])
-        
+
         response = self.client.get(BASE_URL, query_string=f"available={quote_plus(str(test_product.available))}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()

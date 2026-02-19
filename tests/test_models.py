@@ -228,4 +228,3 @@ class TestProductModel(unittest.TestCase):
         price_str = str(first_prod_price)+" "
         found_products = Product.find_by_price(price_str)
         self.assertEqual(first_price_count, found_products.count())
-

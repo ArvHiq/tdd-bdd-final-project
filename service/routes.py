@@ -101,7 +101,7 @@ def create_products():
 def list_products():
     """Returns all the products in the database"""
     app.logger.info("Request to list Products...")
-    
+
     products = []
     name = request.args.get("name")
     category = request.args.get("category")
@@ -112,7 +112,7 @@ def list_products():
         products = Product.find_by_name(name)
     elif category:
         app.logger.info("Find by category: %s", category)
-        category_value =  getattr(Category, category.upper())
+        category_value = getattr(Category, category.upper())
         products = Product.find_by_category(category_value)
     elif available:
         app.logger.info("Find by available: %s", available)
@@ -120,11 +120,12 @@ def list_products():
     else:
         app.logger.info("Find all")
         products = Product.all()
-    
+
     results = [p.serialize() for p in products]
     app.logger.info("[%s] Products returned", len(results))
     return results, status.HTTP_200_OK
-    
+
+
 ######################################################################
 # R E A D   A   P R O D U C T
 ######################################################################
