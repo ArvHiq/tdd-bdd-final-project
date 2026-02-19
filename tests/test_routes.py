@@ -202,6 +202,10 @@ class TestProductRoutes(TestCase):
         data = response.get_json()
         self.assertEqual(data["description"], new_description)
 
+        # Test updating non existing product
+        response = self.client.put(f'{BASE_URL}/{data["id"]}123', json=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 # ----------------------------------------------------------
 # TEST DELETE
 # ----------------------------------------------------------
@@ -247,6 +251,30 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), name_count)
         for product in data:
             self.assertEqual(product["name"], test_product.name)
+
+    def test_list_by_category(self):
+        products = self._create_products(5)
+        test_product = products[0]
+        category_count = len([p for p in products if p.category == test_product.category])
+        
+        response = self.client.get(BASE_URL, query_string=f"category={quote_plus(test_product.category.name)}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data),category_count)
+        for product in data:
+            self.assertEqual(product["category"], test_product.category.name)
+
+    def test_list_by_availability(self):
+        products = self._create_products(5)
+        test_product = products[0]
+        available_count = len([p for p in products if p.available == test_product.available])
+        
+        response = self.client.get(BASE_URL, query_string=f"available={quote_plus(str(test_product.available))}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), available_count)
+        for product in data:
+            self.assertEqual(product["available"], test_product.available)
 
     ######################################################################
     # Utility functions
